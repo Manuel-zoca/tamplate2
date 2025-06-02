@@ -34,6 +34,7 @@ client.on("qr", async (qr) => {
 // Evento quando o cliente estiver pronto
 client.on("ready", () => {
     console.log("✅ WhatsApp Bot está pronto e conectado!");
+    currentQrBase64 = ""; // Limpa QR Code porque já está conectado
 });
 
 // Evento para mensagens recebidas (opcional)
@@ -82,6 +83,15 @@ app.post("/send", async (req, res) => {
     } catch (error) {
         console.error("❌ Erro ao enviar mensagens:", error);
         res.status(500).json({ error: "Erro ao enviar mensagens" });
+    }
+});
+
+// Novo endpoint para obter o QR Code atual (em base64)
+app.get("/qr", (req, res) => {
+    if (currentQrBase64) {
+        res.json({ qr: currentQrBase64 });
+    } else {
+        res.status(404).json({ error: "QR Code não disponível ou cliente já está conectado." });
     }
 });
 
