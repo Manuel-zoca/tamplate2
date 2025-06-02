@@ -11,7 +11,7 @@
   <input type="text" id="numbers" placeholder="Números separados por vírgula (ex: 258872960710)" />
   <button onclick="sendMessage()">Enviar Mensagem</button>
   <p id="status"></p>
-  <p id="loading" style="display:none;">Enviando mensagens... Aguarde.</p>
+  <p id="loading" style="display:none;">Enviando mensagens... Pode fechar esta aba.</p>
 
   <script>
     const mensagemIntro = `👋 Olá! Vimos que entraste em contacto connosco através do nosso anúncio.
@@ -59,74 +59,45 @@ Qual pacote vais querer aproveitar com desconto hoje?
 👉 https://chat.whatsapp.com/DsP45qnxmpYL1LARsYP68F`;
 
     async function sendMessage() {
-      const numbers = document.getElementById("numbers").value.split(",").map(n => n.trim()).filter(n => n);
+      const numbersInput = document.getElementById("numbers").value;
       const status = document.getElementById("status");
       const loading = document.getElementById("loading");
 
+      const numbers = numbersInput.split(",").map(n => n.trim()).filter(n => n !== "");
+
       if (numbers.length === 0) {
-        status.innerText = "Por favor, preencha os números!";
+        status.innerText = "⚠️ Por favor, preencha os números!";
         return;
       }
 
       loading.style.display = "block";
-      status.innerText = "Iniciando envio de mensagens...";
+      status.innerText = "🚀 Iniciando envio... Pode fechar esta aba se desejar.";
 
       try {
-        for (let i = 0; i < numbers.length; i++) {
-          const number = numbers[i];
-
-          // Tempo aleatório entre 4 e 6 minutos
-          let minTime = 4 * 60;
-          let maxTime = 6 * 60;
-          let totalIntervalSeconds = Math.floor(Math.random() * (maxTime - minTime + 1)) + minTime;
-
-          function updateCountdown() {
-            let minutes = Math.floor(totalIntervalSeconds / 60);
-            let seconds = totalIntervalSeconds % 60;
-            status.innerText = `Aguarde ${minutes}m ${seconds}s para enviar a mensagem para ${number}`;
-            if (totalIntervalSeconds > 0) {
-              totalIntervalSeconds--;
-            } else {
-              clearInterval(countdownInterval);
-              status.innerText = `Enviando mensagens para ${number}...`;
-            }
-          }
-
-          const countdownInterval = setInterval(updateCountdown, 1000);
-          await new Promise(resolve => setTimeout(resolve, totalIntervalSeconds * 1000));
-          clearInterval(countdownInterval);
-
-          await sendToWhatsApp(number, mensagemIntro);
-          await new Promise(resolve => setTimeout(resolve, 7000));
-          await sendToWhatsApp(number, mensagemTabela);
-          await new Promise(resolve => setTimeout(resolve, 5000));
-          await sendToWhatsApp(number, mensagemDesconto);
-
-          status.innerText = `Mensagens enviadas para ${number}`;
-        }
-
-        status.innerText = "✅ Todas as mensagens foram enviadas com sucesso!";
-      } catch (error) {
-        status.innerText = "❌ Erro ao enviar mensagens!";
-        console.error(error);
-      } finally {
-        loading.style.display = "none";
-      }
-    }
-
-    async function sendToWhatsApp(number, message) {
-      try {
-        const numberWithSuffix = `${number}@c.us`;
-        const response = await fetch("http://localhost:3000/send", {
+        const response = await fetch("/send", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ numbers: [numberWithSuffix], message })
+          body: JSON.stringify({
+            numbers,
+            mensagemIntro,
+            mensagemTabela,
+            mensagemDesconto
+          })
         });
 
-        const data = await response.json();
-        console.log("Resposta do servidor:", data);
+        const result = await response.json();
+
+        if (result.success) {
+          status.innerText = "✅ Envio iniciado com sucesso! Pode fechar esta aba.";
+        } else {
+          status.innerText = "❌ Ocorreu um erro ao iniciar o envio.";
+          console.error(result);
+        }
       } catch (error) {
-        console.error("Erro ao enviar para o WhatsApp:", error);
+        console.error("Erro ao enviar solicitação:", error);
+        status.innerText = "❌ Erro ao se comunicar com o servidor.";
+      } finally {
+        loading.style.display = "none";
       }
     }
   </script>
