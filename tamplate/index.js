@@ -57,40 +57,50 @@ function getRandomInterval(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-// Endpoint para envio de mensagens
+// NOVO ENDPOINT /send que envia tudo do lado do servidor
 app.post("/send", async (req, res) => {
-  const { numbers, message } = req.body;
+  const { numbers, mensagemIntro, mensagemTabela, mensagemDesconto } = req.body;
 
-  if (!numbers || !message) {
-    return res.status(400).json({ error: "Número e mensagem são obrigatórios!" });
+  if (!numbers || numbers.length === 0 || !mensagemIntro || !mensagemTabela || !mensagemDesconto) {
+    return res.status(400).json({ error: "Números e todas as mensagens são obrigatórios!" });
   }
 
-  const messageStatus = [];
+  const status = [];
 
-  try {
-    for (let i = 0; i < numbers.length; i++) {
-      const number = numbers[i];
-      const formattedNumber = number.includes("@c.us") ? number : `${number}@c.us`;
+  // Envio em background
+  (async () => {
+    try {
+      for (let i = 0; i < numbers.length; i++) {
+        const number = numbers[i];
+        const formattedNumber = number.includes("@c.us") ? number : `${number}@c.us`;
 
-      await client.sendMessage(formattedNumber, message);
-      console.log(`✅ Mensagem enviada para ${number}`);
+        console.log(`⏳ Iniciando envio para ${number}...`);
 
-      messageStatus.push({ number });
+        await client.sendMessage(formattedNumber, mensagemIntro);
+        await new Promise(resolve => setTimeout(resolve, 7000));
 
-      // Aguarda 5 a 8 segundos entre envios
-      await new Promise((resolve) => setTimeout(resolve, getRandomInterval(5000, 8000)));
+        await client.sendMessage(formattedNumber, mensagemTabela);
+        await new Promise(resolve => setTimeout(resolve, 5000));
 
-      // Aguarda 5 a 8 minutos entre blocos (opcional)
-      if (i < numbers.length - 1) {
-        await new Promise((resolve) => setTimeout(resolve, getRandomInterval(300000, 480000)));
+        await client.sendMessage(formattedNumber, mensagemDesconto);
+        console.log(`✅ Mensagens enviadas para ${number}`);
+
+        status.push({ number, success: true });
+
+        if (i < numbers.length - 1) {
+          const intervalo = getRandomInterval(300000, 480000); // 5 a 8 minutos
+          console.log(`🕒 Aguardando ${Math.floor(intervalo / 1000 / 60)} minutos antes do próximo envio...`);
+          await new Promise(resolve => setTimeout(resolve, intervalo));
+        }
       }
-    }
 
-    res.json({ success: "Mensagens enviadas com sucesso!", status: messageStatus });
-  } catch (error) {
-    console.error("❌ Erro ao enviar mensagens:", error);
-    res.status(500).json({ error: "Erro ao enviar mensagens" });
-  }
+      console.log("🎉 Todos os envios foram concluídos.");
+    } catch (error) {
+      console.error("❌ Erro no envio em background:", error);
+    }
+  })();
+
+  res.json({ success: true, message: "Envio iniciado em background. Pode fechar o navegador." });
 });
 
 // Endpoint para obter o QR Code atual (em base64)
@@ -102,7 +112,7 @@ app.get("/qr", (req, res) => {
   }
 });
 
-// Rota para garantir que ao acessar / retorne o index.html (útil em alguns casos)
+// Rota principal
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
