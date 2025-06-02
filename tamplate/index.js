@@ -3,10 +3,9 @@ const { Client, LocalAuth } = require("whatsapp-web.js");
 const cors = require("cors");
 const QRCode = require("qrcode");
 const path = require("path");
-const puppeteer = require("puppeteer"); // atualizado para usar corretamente o executablePath
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(cors());
@@ -17,7 +16,6 @@ const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
         headless: true,
-        executablePath: puppeteer.executablePath(), // corrigido aqui
         args: ["--no-sandbox", "--disable-setuid-sandbox"],
     },
 });
@@ -38,7 +36,7 @@ client.on("ready", () => {
 });
 
 // Evento para mensagens recebidas (opcional)
-client.on("message", msg => {
+client.on("message", (msg) => {
     console.log(`📩 Mensagem recebida de ${msg.from}: ${msg.body}`);
 });
 
@@ -91,11 +89,11 @@ app.post("/send", async (req, res) => {
             messageStatus.push({ number });
 
             // Aguarda 5 a 8 segundos entre envios
-            await new Promise(resolve => setTimeout(resolve, getRandomInterval(5000, 8000)));
+            await new Promise((resolve) => setTimeout(resolve, getRandomInterval(5000, 8000)));
 
-            // Aguarda 5 a 8 minutos entre blocos
+            // Aguarda 5 a 8 minutos entre blocos (opcional)
             if (i < numbers.length - 1) {
-                await new Promise(resolve => setTimeout(resolve, getRandomInterval(300000, 480000)));
+                await new Promise((resolve) => setTimeout(resolve, getRandomInterval(300000, 480000)));
             }
         }
 
