@@ -2,17 +2,24 @@ const express = require("express");
 const { Client, LocalAuth } = require("whatsapp-web.js");
 const cors = require("cors");
 const QRCode = require("qrcode");
+const path = require("path");
 
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Middlewares
 app.use(express.json());
 app.use(cors());
 
-let currentQrBase64 = ""; // QR Code atual em base64
+// Servir arquivos estáticos da pasta public
+app.use(express.static(path.join(__dirname, "public")));
 
+// Variável para guardar o QR Code em base64
+let currentQrBase64 = "";
+
+// Configuração do cliente WhatsApp
 const client = new Client({
-    authStrategy: new LocalAuth(), // mantém sessão local para não precisar escanear sempre
+    authStrategy: new LocalAuth(),
     puppeteer: {
         headless: true,
         args: ["--no-sandbox", "--disable-setuid-sandbox"],
@@ -42,7 +49,7 @@ client.on("message", (msg) => {
     console.log(`📩 Mensagem recebida de ${msg.from}: ${msg.body}`);
 });
 
-// Inicializa o cliente
+// Inicializa o cliente WhatsApp
 client.initialize();
 
 // Função auxiliar para intervalo aleatório
@@ -86,13 +93,18 @@ app.post("/send", async (req, res) => {
     }
 });
 
-// Novo endpoint para obter o QR Code atual (em base64)
+// Endpoint para obter o QR Code atual (em base64)
 app.get("/qr", (req, res) => {
     if (currentQrBase64) {
         res.json({ qr: currentQrBase64 });
     } else {
         res.status(404).json({ error: "QR Code não disponível ou cliente já está conectado." });
     }
+});
+
+// Rota para garantir que ao acessar / retorne o index.html
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 // Inicia o servidor
