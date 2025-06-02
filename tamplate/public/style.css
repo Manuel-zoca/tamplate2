@@ -1,0 +1,94 @@
+body {
+    font-family: 'Courier New', Courier, monospace;
+    background-color: #0f0f0f;
+    color: #33ff33;
+    text-align: center;
+    padding: 20px;
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+h2 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    text-shadow: 0 0 10px rgba(0, 255, 0, 0.7);
+    animation: text-flicker 1.5s infinite;
+}
+
+/* Input e textarea */
+input, textarea {
+    background-color: #1a1a1a;
+    border: 2px solid #33ff33;
+    color: #33ff33;
+    font-size: 1.2rem;
+    padding: 10px;
+    margin: 10px 0;
+    width: 80%;
+    border-radius: 5px;
+    box-sizing: border-box;
+    transition: all 0.3s ease-in-out;
+}
+
+input:focus, textarea:focus {
+    background-color: #333333;
+    outline: none;
+    border-color: #ff33cc;
+}
+
+textarea {
+    height: 100px;
+}
+
+/* Botão */
+button {
+    background-color: #33ff33;
+    color: #0f0f0f;
+    font-size: 1.2rem;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    width: 80%;
+    border-radius: 5px;
+    margin-top: 20px;
+    box-sizing: border-box;
+    transition: all 0.3s ease-in-out;
+}
+
+button:hover {
+    background-color: #ff33cc;
+    color: #fff;
+    transform: scale(1.1);
+}
+
+button:active {
+    background-color: #ff1f8d;
+}
+
+/* Animação de status */
+#status {
+    margin-top: 20px;
+    font-size: 1.2rem;
+    animation: status-animation 2s ease-in-out;
+}
+
+/* Efeitos de animação */
+@keyframes text-flicker {
+    0% { opacity: 1; }
+    50% { opacity: 0.4; }
+    100% { opacity: 1; }
+}
+
+@keyframes status-animation {
+    0% { opacity: 0; transform: translateY(-10px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+#loading {
+    display: none;
+    margin-top: 20px;
+    font-size: 1.2rem;
+}

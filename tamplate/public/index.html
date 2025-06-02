@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WhatsApp Bot - TOPAI</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <h2>WhatsApp Bot-TOPAI - Hacker Mode</h2>
+  <input type="text" id="numbers" placeholder="Números separados por vírgula (ex: 258872960710)" />
+  <button onclick="sendMessage()">Enviar Mensagem</button>
+  <p id="status"></p>
+  <p id="loading" style="display:none;">Enviando mensagens... Aguarde.</p>
+
+  <script>
+    const mensagemIntro = `👋 Olá! Vimos que entraste em contacto connosco através do nosso anúncio.
+
+Temos ofertas incríveis para ti em pacotes de megas VODACOM! Confere abaixo a tabela completa com os nossos preços mais atualizados. 📶💰`;
+
+    const mensagemTabela = `📢 *TABELA DE MEGAS VODACOM*  
+ⓘ *❗🛑MEGABYTE VODACOM*
+
+📅 *TABELA ATUALIZADA EM: 04/05/2025*  
+🕓 *Validade: 1 DIA*  
+📶 1.100MB = *20MT*  
+📶 1.650MB = *30MT*  
+📶 2.200MB = *40MT*  
+📶 2.750MB = *50MT*  
+📶 3.300MB = *60MT*  
+📶 4.400MB = *80MT*  
+📶 5.500MB = *100MT*  
+📶 10.000MB = *180MT*  
+📶 15.000MB = *280MT*  
+📶 20.000MB = *360MT*  
+
+🗓️ *PACOTES MENSAIS (30 DIAS):*  
+📶 5.000MB = *130MT*  
+📶 6.100MB = *150MT*  
+📶 7.200MB = *170MT*  
+📶 9.400MB = *210MT*  
+📶 10.500MB = *260MT*  
+📶 20.000MB = *520MT*  
+📶 50.250MB = *1150MT*  
+---
+
+🚀 _Conectando pessoas,_  
+🚀 _compartilhando megabytes!_
+
+💡 *Atendimento das 6h às 23h*  
+🔗 *Entre já no nosso grupo de ofertas e receba atualizações em primeira mão:*  
+👉 https://chat.whatsapp.com/DsP45qnxmpYL1LARsYP68F`;
+
+    const mensagemDesconto = `🎁 *Atenção!* Se recebeste esta mensagem, tens direito a um desconto exclusivo! 😍
+
+Qual pacote vais querer aproveitar com desconto hoje?
+
+🔗 *Não percas as próximas ofertas!* Entra já no nosso grupo VIP:  
+👉 https://chat.whatsapp.com/DsP45qnxmpYL1LARsYP68F`;
+
+    async function sendMessage() {
+      const numbers = document.getElementById("numbers").value.split(",").map(n => n.trim()).filter(n => n);
+      const status = document.getElementById("status");
+      const loading = document.getElementById("loading");
+
+      if (numbers.length === 0) {
+        status.innerText = "Por favor, preencha os números!";
+        return;
+      }
+
+      loading.style.display = "block";
+      status.innerText = "Iniciando envio de mensagens...";
+
+      try {
+        for (let i = 0; i < numbers.length; i++) {
+          const number = numbers[i];
+
+          // Tempo aleatório entre 4 e 6 minutos
+          let minTime = 4 * 60;
+          let maxTime = 6 * 60;
+          let totalIntervalSeconds = Math.floor(Math.random() * (maxTime - minTime + 1)) + minTime;
+
+          function updateCountdown() {
+            let minutes = Math.floor(totalIntervalSeconds / 60);
+            let seconds = totalIntervalSeconds % 60;
+            status.innerText = `Aguarde ${minutes}m ${seconds}s para enviar a mensagem para ${number}`;
+            if (totalIntervalSeconds > 0) {
+              totalIntervalSeconds--;
+            } else {
+              clearInterval(countdownInterval);
+              status.innerText = `Enviando mensagens para ${number}...`;
+            }
+          }
+
+          const countdownInterval = setInterval(updateCountdown, 1000);
+          await new Promise(resolve => setTimeout(resolve, totalIntervalSeconds * 1000));
+          clearInterval(countdownInterval);
+
+          await sendToWhatsApp(number, mensagemIntro);
+          await new Promise(resolve => setTimeout(resolve, 7000));
+          await sendToWhatsApp(number, mensagemTabela);
+          await new Promise(resolve => setTimeout(resolve, 5000));
+          await sendToWhatsApp(number, mensagemDesconto);
+
+          status.innerText = `Mensagens enviadas para ${number}`;
+        }
+
+        status.innerText = "✅ Todas as mensagens foram enviadas com sucesso!";
+      } catch (error) {
+        status.innerText = "❌ Erro ao enviar mensagens!";
+        console.error(error);
+      } finally {
+        loading.style.display = "none";
+      }
+    }
+
+    async function sendToWhatsApp(number, message) {
+      try {
+        const numberWithSuffix = `${number}@c.us`;
+        const response = await fetch("http://localhost:3000/send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ numbers: [numberWithSuffix], message })
+        });
+
+        const data = await response.json();
+        console.log("Resposta do servidor:", data);
+      } catch (error) {
+        console.error("Erro ao enviar para o WhatsApp:", error);
+      }
+    }
+  </script>
+</body>
+</html>
