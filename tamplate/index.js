@@ -2,7 +2,6 @@ const express = require("express");
 const { Client, LocalAuth } = require("whatsapp-web.js");
 const cors = require("cors");
 const QRCode = require("qrcode");
-const path = require("path");
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -13,7 +12,7 @@ app.use(cors());
 let currentQrBase64 = ""; // QR Code atual em base64
 
 const client = new Client({
-    authStrategy: new LocalAuth(),
+    authStrategy: new LocalAuth(), // mantém sessão local para não precisar escanear sempre
     puppeteer: {
         headless: true,
         args: ["--no-sandbox", "--disable-setuid-sandbox"],
@@ -24,9 +23,11 @@ const client = new Client({
 client.on("qr", async (qr) => {
     try {
         currentQrBase64 = await QRCode.toDataURL(qr);
-        console.log("📱 Escaneie o QR Code acessando http://localhost:3000/qr");
+        console.log("📱 QR Code gerado com sucesso!");
+        console.log("🔗 Cole o código abaixo em https://base64.guru/converter/decode/image para escanear:");
+        console.log(currentQrBase64);
     } catch (err) {
-        console.error("Erro ao gerar QR Code:", err);
+        console.error("❌ Erro ao gerar QR Code:", err);
     }
 });
 
@@ -42,26 +43,6 @@ client.on("message", (msg) => {
 
 // Inicializa o cliente
 client.initialize();
-
-// Serve arquivos estáticos (caso tenha um frontend)
-app.use(express.static(path.join(__dirname, "public")));
-
-// Página inicial simples
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "index.html"));
-});
-
-// Exibir QR Code no navegador via base64
-app.get("/qr", (req, res) => {
-    if (currentQrBase64) {
-        res.send(`
-            <h2>📱 Escaneie o QR Code</h2>
-            <img src="${currentQrBase64}" alt="QR Code WhatsApp" />
-        `);
-    } else {
-        res.send("<p>QR Code não gerado ou já autenticado.</p>");
-    }
-});
 
 // Função auxiliar para intervalo aleatório
 function getRandomInterval(min, max) {
@@ -106,5 +87,5 @@ app.post("/send", async (req, res) => {
 
 // Inicia o servidor
 app.listen(port, () => {
-    console.log(`🚀 Servidor rodando em http://localhost:${port}`);
+    console.log(`🚀 Servidor rodando na porta ${port}`);
 });
