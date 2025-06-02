@@ -1,22 +1,18 @@
 {
   "name": "tamplate",
   "version": "1.0.0",
+  "description": "Bot WhatsApp usando whatsapp-web.js com Express e Puppeteer para Render",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js"
   },
-  "keywords": [],
-  "author": "",
+  "author": "Seu Nome",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.21.2",
     "puppeteer": "^24.3.0",
-    "puppeteer-core": "^24.4.0",
     "qrcode": "^1.5.4",
-    "qrcode-terminal": "^0.12.0",
     "whatsapp-web.js": "^1.30.0"
   }
 }
